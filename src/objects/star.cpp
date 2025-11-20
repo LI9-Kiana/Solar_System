@@ -17,11 +17,9 @@ void Star::accept(Visitor& visitor)
  */
 [[nodiscard]] Star* Star::clone() const
 {
-    Star* temp = new Star(name,mass);
+    Star* temp = new Star(name, mass);
     return temp;
 }
-
-
 
 /**
  * Initializes a star with the provided properties - really only called by
@@ -29,7 +27,7 @@ void Star::accept(Visitor& visitor)
  * @param name - name of the object
  * @param mass - mass of the object
  */
-Star::Star(const std::string& name, double mass): Object::Object(name,mass,Vector2(), Vector2())
+Star::Star(const std::string& name, double mass)
+    : Object::Object(name, mass, Vector2(), Vector2())
 {
-
 }

@@ -10,7 +10,6 @@
 class Object;
 class ObjectFactory;
 
-
 typedef std::vector<Object*>::iterator iterator;
 typedef std::vector<Object*>::const_iterator const_iterator;
 
@@ -25,7 +24,6 @@ Universe* Universe::instance()
         inst = new Universe();
     }
     return inst;
-
 }
 
 /**
@@ -86,12 +84,14 @@ Universe::iterator Universe::begin()
 [[nodiscard]] std::vector<Object*> Universe::getSnapshot() const
 {
     std::vector<Object*> temp;
-    for (auto iter = this->begin();iter!=this->end();++iter) {
-        if (iter == this->begin()) temp.push_back(ObjectFactory::makeStar((*iter)->getName(),(*iter)->getMass()));
-        else temp.push_back(ObjectFactory::makePlanet((*iter)->getName(),(*iter)->getMass(),(*iter)->getPosition(),(*iter)->getVelocity()));
+    for (auto iter = this->begin(); iter != this->end(); ++iter) {
+        if (iter == this->begin())
+            temp.push_back(ObjectFactory::makeStar((*iter)->getName(), (*iter)->getMass()));
+        else
+            temp.push_back(ObjectFactory::makePlanet((*iter)->getName(), (*iter)->getMass(),
+                (*iter)->getPosition(), (*iter)->getVelocity()));
     }
     return temp;
-
 }
 
 /**
@@ -102,17 +102,15 @@ Universe::iterator Universe::begin()
  */
 void Universe::stepSimulation(const double& timeSec)
 {
-    for (auto iter = ++this->begin();iter!=this->end();++iter) {
+    for (auto iter = ++this->begin(); iter != this->end(); ++iter) {
 
         Vector2 vel = (*iter)->getVelocity();
-        Vector2 newPos = (*iter)->getPosition()+timeSec*vel;
-        Vector2 acc = ((*this).sumForce(*iter))/(*iter)->getMass();
-        Vector2 newVel = (*iter)->getVelocity()+timeSec*acc;
-
+        Vector2 newPos = (*iter)->getPosition() + timeSec * vel;
+        Vector2 acc = ((*this).sumForce(*iter)) / (*iter)->getMass();
+        Vector2 newVel = (*iter)->getVelocity() + timeSec * acc;
 
         (*iter)->setPosition(newPos);
         (*iter)->setVelocity(newVel);
-
     }
 }
 
@@ -123,14 +121,10 @@ void Universe::stepSimulation(const double& timeSec)
  */
 void Universe::swap(std::vector<Object*>& snapshot)
 {
-    auto temp  = objects;
+    auto temp = objects;
     objects = snapshot;
     release(temp);
-
 }
-
-
-
 
 /**
  * Registers an Object with the universe. The Universe will clean up this
@@ -144,7 +138,6 @@ Object* Universe::addObject(Object* ptr)
     return ptr;
 }
 
-
 /**
  * Calculate the total force for the ith object in the universe
  * @param obj object pointer within the Universe's vector of objects
@@ -153,13 +146,12 @@ Object* Universe::addObject(Object* ptr)
 [[nodiscard]] Vector2 Universe::sumForce(const Object* obj) const
 {
     Vector2 sum;
-    for (auto & object : objects) {
-        if (object!=obj) sum+=obj->getForce(*object);
+    for (auto& object : objects) {
+        if (object != obj)
+            sum += obj->getForce(*object);
     }
     return sum;
 }
-
-
 
 // /**
 //  * Calls delete on each pointer and removes it from the container
@@ -167,9 +159,7 @@ Object* Universe::addObject(Object* ptr)
 //  */
 void Universe::release(std::vector<Object*>& objects)
 {
-    for (auto & object : objects) {
+    for (auto& object : objects) {
         delete object;
-
     }
 }
-
