@@ -10,7 +10,7 @@
 #include "objects/object.h"
 #include "objects/planet.h"
 #include "objects/star.h"
-#include "vector.h" // for Vector2
+#include "vector.h"
 
 #include <algorithm>
 #include <cctype>
@@ -20,16 +20,16 @@
 #include <unordered_map>
 #include <unordered_set>
 
-// ---------- color helper state (cpp-only, not in header) ----------
+// ---------- color helper  ----------
 namespace {
-// Remember which color each object pointer got
+
 std::unordered_map<const Object*, int> objectColor;
-// Remember which color codes are already in use
+
 std::unordered_set<int> usedColors;
 
 int getColorFor(const Object* obj)
 {
-    // If we already assigned a color, reuse it
+
     auto it = objectColor.find(obj);
     if (it != objectColor.end())
         return it->second;
@@ -77,7 +77,7 @@ void VisualVisitor::visit(const Comet& comet) const
 char VisualVisitor::chooseMarker(const Object* obj,
     std::unordered_map<const Object*, char>& mapping, std::unordered_set<char>& used) const
 {
-    // If we already computed its marker, reuse it
+    // reuse it
     auto it = mapping.find(obj);
     if (it != mapping.end())
         return it->second;
@@ -115,10 +115,10 @@ char VisualVisitor::chooseMarker(const Object* obj,
 
 void VisualVisitor::visualize(std::ostream& os) const
 {
-    // Total frame
+
     constexpr int TOTAL_W = 64;
     constexpr int TOTAL_H = 16;
-    // Interior area
+
     constexpr int INNER_W = TOTAL_W - 2; // 62
     constexpr int INNER_H = TOTAL_H - 2; // 14
 
@@ -126,7 +126,7 @@ void VisualVisitor::visualize(std::ostream& os) const
         return; // nothing to visualize
     }
 
-    // Choose center object: first object (you can switch to first Star if you want)
+    // Choose center object: first object
     const Object* centerObj = objects[0];
     const Vector2 centerPos = centerObj->getPosition();
 
@@ -146,22 +146,21 @@ void VisualVisitor::visualize(std::ostream& os) const
     const double radiusX = INNER_W / 2.0;
     const double radiusY = INNER_H / 2.0;
 
-    // Use a single scale so we keep aspect ratio reasonable
+    // Use a single scale so we keep aspect ratio reasonable (makes things small though
     double scaleX = maxDist / radiusX;
     double scaleY = maxDist / radiusY;
     double scale = std::max(scaleX, scaleY);
     if (scale == 0.0)
         scale = 1.0;
 
-    // Instead of chars, store which object is in each cell (for per-object color)
+    // Store which object is in each cell
     std::vector<std::vector<const Object*>> grid(
         INNER_H, std::vector<const Object*>(INNER_W, nullptr));
 
-    // Center cell (in interior coordinates)
+    // Center cell
     const int cx = INNER_W / 2;
     const int cy = INNER_H / 2;
 
-    // Marker mapping / used letters
     std::unordered_map<const Object*, char> markerMap;
     std::unordered_set<char> usedLetters;
 
@@ -169,11 +168,9 @@ void VisualVisitor::visualize(std::ostream& os) const
     for (const auto* obj : objects) {
         Vector2 rel = obj->getPosition() - centerPos;
 
-        // Convert to "grid units"
         double gx = rel[0] / scale;
         double gy = rel[1] / scale;
 
-        // Map to grid
         int col = cx + static_cast<int>(std::round(gx));
         int row = cy - static_cast<int>(std::round(gy)); // invert y for screen
 
@@ -181,12 +178,12 @@ void VisualVisitor::visualize(std::ostream& os) const
             continue;
         }
 
-        // Find a free column on this row to avoid overlap, like you did before
+        // Find a free column on this row to avoid overlap
         while (col < INNER_W && grid[row][col] != nullptr) {
             ++col;
         }
         if (col >= INNER_W) {
-            continue; // no space on this row
+            continue;
         }
 
         grid[row][col] = obj;
@@ -206,7 +203,7 @@ void VisualVisitor::visualize(std::ostream& os) const
             } else {
                 char marker = chooseMarker(obj, markerMap, usedLetters);
                 int color = getColorFor(obj);
-                // ANSI 256-color: set foreground color, print marker, reset
+                // ANSI 256-color print marker, reset
                 os << "\033[38;5;" << color << "m" << marker << "\033[0m";
             }
         }
