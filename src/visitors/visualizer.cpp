@@ -15,6 +15,42 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
+#include <unordered_map>
+#include <unordered_set>
+
+// ---------- color helper state (cpp-only, not in header) ----------
+namespace {
+// Remember which color each object pointer got
+std::unordered_map<const Object*, int> objectColor;
+// Remember which color codes are already in use
+std::unordered_set<int> usedColors;
+
+int getColorFor(const Object* obj)
+{
+    // If we already assigned a color, reuse it
+    auto it = objectColor.find(obj);
+    if (it != objectColor.end())
+        return it->second;
+
+    // Seed RNG once lazily
+    static bool seeded = false;
+    if (!seeded) {
+        std::srand(static_cast<unsigned>(std::time(nullptr)));
+        seeded = true;
+    }
+
+    int color;
+    do {
+        color = std::rand() % 256; // ANSI 256-color index
+    } while (usedColors.contains(color));
+
+    usedColors.insert(color);
+    objectColor[obj] = color;
+    return color;
+}
+} // anonymous namespace
 
 // Collect pointers to all visited objects
 
@@ -90,10 +126,8 @@ void VisualVisitor::visualize(std::ostream& os) const
         return; // nothing to visualize
     }
 
-    // Choose center object: first object
-    const Object* centerObj = nullptr;
-    centerObj = objects[0];
-
+    // Choose center object: first object (you can switch to first Star if you want)
+    const Object* centerObj = objects[0];
     const Vector2 centerPos = centerObj->getPosition();
 
     // Compute max distance from center used to compute scaling
@@ -112,16 +146,16 @@ void VisualVisitor::visualize(std::ostream& os) const
     const double radiusX = INNER_W / 2.0;
     const double radiusY = INNER_H / 2.0;
 
-    // Use a single scale so we keep aspect ratio reasonable (the height 14 makes everything
-    // horizontally small though...)
+    // Use a single scale so we keep aspect ratio reasonable
     double scaleX = maxDist / radiusX;
     double scaleY = maxDist / radiusY;
     double scale = std::max(scaleX, scaleY);
     if (scale == 0.0)
         scale = 1.0;
 
-    // Prepare blank interior grid
-    std::vector<std::string> grid(INNER_H, std::string(INNER_W, ' '));
+    // Instead of chars, store which object is in each cell (for per-object color)
+    std::vector<std::vector<const Object*>> grid(
+        INNER_H, std::vector<const Object*>(INNER_W, nullptr));
 
     // Center cell (in interior coordinates)
     const int cx = INNER_W / 2;
@@ -147,10 +181,15 @@ void VisualVisitor::visualize(std::ostream& os) const
             continue;
         }
 
-        char marker = chooseMarker(obj, markerMap, usedLetters);
-        while (grid[row][col] != ' ')
-            ++col; // make sure no objects overlap
-        grid[row][col] = marker;
+        // Find a free column on this row to avoid overlap, like you did before
+        while (col < INNER_W && grid[row][col] != nullptr) {
+            ++col;
+        }
+        if (col >= INNER_W) {
+            continue; // no space on this row
+        }
+
+        grid[row][col] = obj;
     }
 
     // Plot everything
@@ -159,7 +198,19 @@ void VisualVisitor::visualize(std::ostream& os) const
 
     // Interior with side borders
     for (int r = 0; r < INNER_H; ++r) {
-        os << '*' << grid[r] << "*\n";
+        os << '*';
+        for (int c = 0; c < INNER_W; ++c) {
+            const Object* obj = grid[r][c];
+            if (!obj) {
+                os << ' ';
+            } else {
+                char marker = chooseMarker(obj, markerMap, usedLetters);
+                int color = getColorFor(obj);
+                // ANSI 256-color: set foreground color, print marker, reset
+                os << "\033[38;5;" << color << "m" << marker << "\033[0m";
+            }
+        }
+        os << "*\n";
     }
 
     // Bottom border
