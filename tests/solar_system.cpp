@@ -1,9 +1,12 @@
 // @author G. Hemingway, copyright 2025 - All rights reserved
+// Name: Chengtong Zhu; vunetid: zhuc13; email address: chengtong.zhu@vanderbil.edu; honor code: I
+// pledge on my honor that I have neither given nor received unauthorized aid on this assignment.
 #include "./test_helper.h"
 #include "objects/object.h"
 #include "parser.h"
 #include "universe.h"
 #include "visitors/visitor.h"
+#include "visitors/visualizer.h"
 #include <fstream>
 #include <gtest/gtest.h>
 #include <memory>
@@ -45,8 +48,8 @@ TEST_F(SolarSystem, AllPlanets)
 
     /** Uncomment these lines if you submit the extra credit - you will also need
      * to #include your visitor's header file  **/
-    // VisualVisitor vizVis;
-    // for (const auto& i : *univ)
-    //     i->accept(vizVis);
-    // vizVis->visualize(std::cout);
+    VisualVisitor vizVis;
+    for (const auto& i : *univ)
+        i->accept(vizVis);
+    vizVis->visualize(std::cout);
 }
