@@ -168,19 +168,34 @@ void VisualVisitor::visualize(std::ostream& os) const
     for (const auto* obj : objects) {
         Vector2 rel = obj->getPosition() - centerPos;
 
-        double gx = rel[0] / scale;
-        double gy = rel[1] / scale;
+        double gx = rel[0] / scaleX;
+        double gy = rel[1] / scaleY;
 
-        int col = cx + static_cast<int>(std::round(gx));
-        int row = cy - static_cast<int>(std::round(gy)); // invert y for screen
+        int col = cx + static_cast<int>(floor(gx));
+        int row = cy + static_cast<int>(floor(gy));
 
         if (row < 0 || row >= INNER_H || col < 0 || col >= INNER_W) {
             continue;
         }
 
         // Find a free column on this row to avoid overlap
-        while (col < INNER_W && grid[row][col] != nullptr) {
-            ++col;
+        while (col < INNER_W && col > 0 && row<INNER_H && row>0 && grid[row][col] != nullptr) {
+            if (gx>cx && gy>cy) {
+                ++col;
+                ++row;
+            }
+            else if (!(gx>cx) && gy>cy) {
+                --col;
+                ++row;
+            }
+            else if (gx>cx && !(gy>cy)) {
+                ++col;
+                --row;
+            }
+            else {
+                --col;
+                --row;
+            }
         }
         if (col >= INNER_W) {
             continue;

@@ -47,10 +47,10 @@ public:
      */
     void visualize(std::ostream& os) const;
 
-private:
+
     // We mutate this inside const visit() and visualize()
     mutable std::vector<const Object*> objects;
-
+private:
     /**
      * Choose a single-character marker for an object, using:
      * - first letter of its name

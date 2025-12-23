@@ -1,13 +1,10 @@
-// @author G. Hemingway, copyright 2025 - All rights reserved
 // Name: Chengtong Zhu; vunetid: zhuc13; email address: chengtong.zhu@vanderbil.edu; honor code: I
 // pledge on my honor that I have neither given nor received unauthorized aid on this assignment.
 // Iterator typedefs
 #include "universe.h"
 #include "./vector.h"
 #include "objects/object.h"
-#include "objects/object_factory.h"
-#include "objects/planet.h"
-#include "objects/star.h"
+
 #include <vector>
 class Object;
 class ObjectFactory;
